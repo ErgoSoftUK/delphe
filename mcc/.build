@@ -1,0 +1,22 @@
+compile=ec IGNORECACHE
+
+all: infotext_mcc.m toolbar_mcc.m texteditor_mcc.m listtree_mcc.m
+
+infotext_mcc.m: infotext_mcc.e
+  $(compile) infotext_mcc.e
+  COPY $(target) emodules:mui/
+
+toolbar_mcc.m: toolbar_mcc.e
+  $(compile) toolbar_mcc.e
+  COPY $(target) emodules:mui/
+
+texteditor_mcc.m: texteditor_mcc.e
+  $(compile) texteditor_mcc.e
+  COPY $(target) emodules:mui/
+
+listtree_mcc.m: listtree_mcc.e
+  $(compile) listtree_mcc.e
+  COPY $(target) emodules:mui/
+
+clean:
+  DELETE #?.m

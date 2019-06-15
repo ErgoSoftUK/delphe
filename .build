@@ -1,0 +1,14 @@
+compile=ec DEBUG SYM IGNORECACHE QUIET
+
+all: delphe
+
+delphe: delphe.e mainWin.m
+  $(compile) delphe
+
+mainWin.m: mainWin.e
+  $(compile) mainWin.e
+
+clean:
+  DELETE delphe
+  DELETE #?.m
+
