@@ -22,29 +22,38 @@ PROC insertText(text, position=MUIV_TextEditor_InsertText_Top) OF mccCodeEditor
 ENDPROC
 
 PROC parse(text) OF mccCodeEditor
-  DEF keywords:arr, s:string, i, match, matchword:string, pos, t, result:string, end
+  DEF keywords:arr, s:string, i, match, matchword:string, pos, t, txt: string, result:string, end
 
   NEW keywords
-  NEW s.create('\nPROC ')
+  NEW s.create('PROC ')
   keywords.add(s)
-  NEW s.create(' OF ')
+  NEW s.create('DEF ')
+  keywords.add(s)
+  NEW s.create('PTR TO ')
+  keywords.add(s)
+  NEW s.create('OPT ')
+  keywords.add(s)
+  NEW s.create('ENDPROC\n')
+  keywords.add(s)
+  NEW s.create('ENDPROC ')
+  keywords.add(s)
+  NEW s.create('NEW ')
   keywords.add(s)
 
   NEW result.create('')
   pos:=0
   end:=StrLen(text) + 1
 
-  matchword:=NIL
-  
   WriteF('Parsing...')
 
-  WHILE (matchword = NIL)
+  REPEAT
     matchword:=NIL
     match:=end
     FOR i:=0 TO keywords.length()-1
-      s:=keywords[i]
+      s:=keywords.getItem(i)
       t:=InStr(text, s.value, pos)
-      IF (t > -1 AND t < match) 
+      IF ((t > -1) AND (t < match))
+        WriteF('Matched [\s] @ \d\n', s.value, t)
         match:=t
         matchword:=s
       ENDIF
@@ -52,9 +61,9 @@ PROC parse(text) OF mccCodeEditor
 
     IF match < end
       WriteF('Found matching [\s] @ \d\n', matchword.value, match)
-      t:=String(match-pos)
-      MidStr(t, text, pos, match-pos)
-      result.concat(t)
+      txt:=String(match-pos)
+      MidStr(txt, text, pos, match-pos)
+      result.concat(txt)
       result.concat('\eb\ep[18]')
       result.concat(matchword.value)
       result.concat('\en\ep[0]')
@@ -62,63 +71,15 @@ PROC parse(text) OF mccCodeEditor
       WriteF('Output [\s]\n', result.value)
     ENDIF
 
-  ENDWHILE
-  
+  UNTIL (matchword = NIL)
+
   IF (pos < end)
-    t:=String(end-pos)
-    MidStr(t, text, pos, end-pos)
-    result.concat(t)
+    txt:=String(end-pos)
+    MidStr(txt, text, pos, end-pos)
+    result.concat(txt)
   ENDIF
 
-  -> text:=result.value
+  WriteF('Result [\s]\n', result.value)
 
-/*
-    DEF i, s, res:string, buf, t, l, x, keyword:arr, ki, kv:string
-
-    NEW keyword
-    NEW kv.create('\nPROC ')
-    keyword.add(kv)
-    NEW kv.create(' OF ')
-    keyword.add(kv)
-
-
-    buf:=StrLen(text)
-    NEW res.create('')
-
-    FOR ki:=0 TO keyword.length()-1
-        kv:=keyword.getItem(ki)
-        WriteF('Parsing [\s]\n', kv.value)
-
-        i:=InStr(text, kv.value)
-        WHILE i > -1
-          l:=i-s
-
-          x:=StrLen(res)
-          IF buf<(x+8+l)
-            buf:=buf+256
-            t:=String(buf)
-            t:=StrCopy(t, res, ALL)
-            res:=t
-          ENDIF
-
-          t:=String(l)
-          MidStr(t,text,s,i)
-          res.concat(t)
-          res.concat('\n\eb\ep[18]')
-          res.concat(kv.value)
-          res.concat('\en\ep[0]')
-          s:=i+StrLen(kv.value)
-          i:=InStr(text, kv.value,s)
-        ENDWHILE
-
-    ENDFOR
-
-    l:=StrLen(text)-s
-    IF l > 0
-      t:=String(l)
-      RightStr(t, text, l)
-      res.concat(t)
-    ENDIF
-*/
+  text:=result.value
 ENDPROC text
-
