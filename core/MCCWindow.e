@@ -28,3 +28,4 @@ ENDPROC
 
 PROC hookEvents(app) OF mccWindow IS EMPTY
 
+PROC onOpen() OF mccWindow IS EMPTY

@@ -1,6 +1,15 @@
 OPT MODULE
 OPT EXPORT
 
+/*** GLOBAL STRING FUNCTIONS ***/
+PROC strClone(str)
+  DEF clone, l
+  l := StrLen(str)
+  clone := String(l)
+  StrCopy(clone, str, l)
+ENDPROC clone
+
+/*** STRING OBJECT FUNCTIONS ***/
 OBJECT string
   value
 ENDOBJECT

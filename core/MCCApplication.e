@@ -40,6 +40,7 @@ PROC initialize() OF mccApplication HANDLE
 
   WriteF('Open window\n')
   set(self.window.handle,MUIA_Window_Open,MUI_TRUE)
+  self.window.onOpen()
 EXCEPT
   self.cleanup()
 ENDPROC

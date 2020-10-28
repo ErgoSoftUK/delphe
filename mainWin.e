@@ -29,10 +29,12 @@ OBJECT tMainWindow OF mccWindow
       spc:        PTR TO mccRectangle,
       con:        PTR TO mccListview,
       treelist:   PTR TO mccListTree,
+      fu:         PTR TO fileUtils
       drawer, file
 ENDOBJECT
 
 PROC create() OF tMainWindow
+  NEW self.fu
   NEW self.codeEditor.create()
   self.codeEditor.setFixedFont(MUI_TRUE)
 
@@ -105,20 +107,20 @@ PROC openClick() OF tMainWindow
 ENDPROC
 
 PROC saveClick() OF tMainWindow
-  DEF buffer, fu:fileUtils, s:string
+  DEF buffer, s:string
 
   buffer:=self.codeEditor.getText()
 
   NEW s.create(self.drawer)
   s.concat(self.file)
 
-  NEW fu.writeFile(s.value, buffer)
+  self.fu.writeFile(s.value, buffer)
 
   FreeVec(buffer)
 ENDPROC
 
 PROC compileClick() OF tMainWindow
-  DEF cmd: string, r, fu:fileUtils, buffer, node: muis_listtree_treenode
+  DEF cmd: string, r, buffer, node: muis_listtree_treenode
   self.log(['Compiling... ', self.file, NIL])
 
   NEW cmd.create('cd ')
@@ -131,13 +133,12 @@ PROC compileClick() OF tMainWindow
 
   WriteF('Result \d\n', r)
     
-  NEW fu
-  buffer:=fu.readFile('T:delphe-compiler-out')
+  buffer:=self.fu.readFile('T:delphe-compiler-out')
   self.log([buffer, NIL])
 ENDPROC
 
 PROC buildClick() OF tMainWindow
-  DEF cmd:string, r, fu:fileUtils, buffer
+  DEF cmd:string, r, buffer
   self.log(['Building... ', self.file, NIL])
 
   NEW cmd.create('cd ')
@@ -148,17 +149,17 @@ PROC buildClick() OF tMainWindow
 
   WriteF('Result \d\n', r)
     
-  NEW fu
-  buffer:=fu.readFile('T:delphe-compiler-out')
+  buffer:=self.fu.readFile('T:delphe-compiler-out')
   self.log([buffer, NIL])
 ENDPROC
 
 PROC runClick() OF tMainWindow
-  self.log(['Need to work out which is main!!!', NIL])
+    self.log(['Need to work out which is main!!!', NIL])
 ENDPROC
 
+
 PROC treeSelectChange() OF tMainWindow
-    DEF buf, fu: fileUtils, node: muis_listtree_treenode, s:string
+    DEF buf, node: muis_listtree_treenode, s:string
 
     node:=self.treelist.getEntryActive()
 
@@ -181,8 +182,7 @@ PROC treeSelectChange() OF tMainWindow
 
        self.codeEditor.clearText()
 
-       NEW fu
-       IF (buf:=fu.readFile(s.value))
+       IF (buf:=self.fu.readFile(s.value))
          self.codeEditor.insertText(buf)
        ENDIF
     ENDIF
@@ -199,54 +199,35 @@ PROC log(list:PTR TO LONG) OF tMainWindow
 
     msg:=s.value
 
-/*
-    DEF i, msg, l, tmp, cr, su: stringUtils
-
-    NEW su
-    msg := su.clone(list[0])
-
-    i:=1
-
-    WHILE list[i] <> NIL
-        tmp:=String(StrLen(msg) + StrLen(list[i]))
-        tmp:=StrCopy(tmp, msg, ALL)
-        tmp:=StrAdd(tmp, list[i], ALL)
-        msg:=tmp
-        i:=i+1
-    ENDWHILE
-
-    cr:=InStr(msg, '\n')
-    WHILE cr > -1
-        IF (cr > -1)
-            tmp:=String(cr)
-            MidStr(tmp, msg, 0, cr)
-            MidStr(msg, msg, cr + 1)
-            self.con.insertBottom(tmp)
-        ENDIF
-        cr:=InStr(msg, '\n')
-    ENDWHILE
-*/
     self.con.insertBottom(msg)
     self.con.scrollBottom()
 ENDPROC
 
-PROC openProject() OF tMainWindow
-    DEF names: arr, fu: fileUtils, s: string, i, rootnode
+PROC onOpen() OF tMainWindow
+    self.drawer := self.fu.currentDir()
+    
+    self.loadDrawer()
+ENDPROC
 
-    NEW fu
-    self.drawer:=fu.reqDrawer()
+PROC openProject() OF tMainWindow
+    self.drawer:=self.fu.reqDrawer()
+    self.loadDrawer()
+ENDPROC
+
+PROC loadDrawer() OF tMainWindow
+    DEF s: string, rootnode
+
     NEW s.create(self.drawer)
     s.concat('/')
     rootnode:=self.treelist.addNode(s.value)
 
-    self.loadDrawer(rootnode, self.drawer)
+    self.loadDrawerContents(rootnode, self.drawer)
 ENDPROC
 
-PROC loadDrawer(rootnode, drawer) OF tMainWindow
-    DEF names: arr, fu: fileUtils, s: string, d: string, i, node
+PROC loadDrawerContents(rootnode, drawer) OF tMainWindow
+    DEF names: arr, s: string, d: string, i, node
 
-    NEW fu
-    names:=fu.contents(drawer)
+    names:=self.fu.contents(drawer)
 
     WriteF('Found \d entries for \s\n', names.length(), drawer)
     FOR i:=0 TO names.length()-1
@@ -259,7 +240,7 @@ PROC loadDrawer(rootnode, drawer) OF tMainWindow
          d.concat('/')
          d.concat(s.value)
          WriteF('Loading child [\s]\n', d.value)
-         self.loadDrawer(node,d.value) 
+         self.loadDrawerContents(node,d.value) 
        ENDIF
     ENDFOR
 ENDPROC

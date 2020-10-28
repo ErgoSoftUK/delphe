@@ -59,12 +59,16 @@ PROC contents(drawer) OF fileUtils
 
 ENDPROC al
 
-PROC cloneStr(str) OF fileUtils
-  DEF clone, l
-  l := StrLen(str)
-  clone := String(l)
-  StrCopy(clone, str, l)
-ENDPROC clone
+PROC currentDir() OF fileUtils
+  DEF dir[200]	: ARRAY OF CHAR
+  
+  IF GetCurrentDirName(dir, 200)
+	dir := strClone(dir)
+	WriteF('Current dir [\s]\n', dir)
+  ELSE
+	WriteF('No current dir\n')
+  ENDIF
+ENDPROC dir
 
 PROC reqDrawer() OF fileUtils
   DEF req:PTR TO filerequester, d, options
@@ -87,10 +91,11 @@ PROC reqDrawer() OF fileUtils
   IF (aslbase:=OpenLibrary('asl.library',37))
     IF (req:=AllocAslRequest(ASL_FILEREQUEST, NIL))
       IF (AslRequest(req, options))
-        d:=self.cloneStr(req.drawer)
+        d:=strClone(req.drawer)
       ENDIF
       FreeAslRequest(req)
     ENDIF
     CloseLibrary(aslbase)
   ENDIF
 ENDPROC d
+

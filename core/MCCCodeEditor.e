@@ -18,7 +18,8 @@ PROC setContents(value) OF mccCodeEditor
 ENDPROC
 
 PROC insertText(text, position=MUIV_TextEditor_InsertText_Top) OF mccCodeEditor
-  doMethodA(self.editorHandle, [MUIM_TextEditor_InsertText, self.parse(text), position])
+  -> doMethodA(self.editorHandle, [MUIM_TextEditor_InsertText, self.parse(text), position])
+  doMethodA(self.editorHandle, [MUIM_TextEditor_InsertText, text, position])
 ENDPROC
 
 PROC parse(text) OF mccCodeEditor
