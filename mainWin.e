@@ -135,6 +135,7 @@ PROC compileClick() OF tMainWindow
     
   buffer:=self.fu.readFile('T:delphe-compiler-out')
   self.log([buffer, NIL])
+  self.checkForError(buffer)
 ENDPROC
 
 PROC buildClick() OF tMainWindow
@@ -151,12 +152,27 @@ PROC buildClick() OF tMainWindow
     
   buffer:=self.fu.readFile('T:delphe-compiler-out')
   self.log([buffer, NIL])
+  self.checkForError(buffer)
+ENDPROC
+
+PROC checkForError(buffer) OF tMainWindow
+  DEF r, l, s
+
+  IF InStr(buffer, 'ERROR:') > -1
+    self.log(['Compilation Error!', NIL])
+    r := InStr(buffer, 'LINE') + 5
+    l := InStr(buffer, ':', r) - r
+    s := String(l)
+    MidStr(s, buffer, r, l)
+    self.log(['At line [', s, ']', NIL])
+    r,l := Val(s)
+    self.codeEditor.gotoLine(r-1) 
+  ENDIF
 ENDPROC
 
 PROC runClick() OF tMainWindow
     self.log(['Need to work out which is main!!!', NIL])
 ENDPROC
-
 
 PROC treeSelectChange() OF tMainWindow
     DEF buf, node: muis_listtree_treenode, s

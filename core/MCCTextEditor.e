@@ -77,3 +77,7 @@ ENDPROC buffer
 
 PROC scrollBottom() OF mccTextEditor
 ENDPROC
+
+PROC gotoLine(line) OF mccTextEditor
+  set(self.editorHandle, MUIA_TextEditor_CursorY, line)
+ENDPROC
