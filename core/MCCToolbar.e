@@ -16,6 +16,15 @@ PROC create(attributes) OF mccToolbar
   self.handle := Mui_NewObjectA(MUIC_Toolbar, attributes)
 ENDPROC
 
+/** METHODS **/
+PROC enabled(idx, enabled=TRUE) OF mccToolbar
+  IF enabled
+    doMethodA(self.handle, [MUIM_Toolbar_Set, idx, MUIV_Toolbar_Set_Ghosted, FALSE])
+  ELSE
+    doMethodA(self.handle, [MUIM_Toolbar_Set, idx, MUIV_Toolbar_Set_Ghosted, TRUE])
+  ENDIF
+ENDPROC
+
 /** EVENTS **/
 
 PROC onClick(idx) OF mccToolbar

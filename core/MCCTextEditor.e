@@ -72,6 +72,7 @@ ENDPROC
 
 PROC getText() OF mccTextEditor
   DEF buffer
+  set(self.editorHandle, MUIA_TextEditor_ExportHook, MUIV_TextEditor_ExportHook_Plain)
   buffer:=doMethodA(self.editorHandle, [MUIM_TextEditor_ExportText])
 ENDPROC buffer
 

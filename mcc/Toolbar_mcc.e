@@ -93,11 +93,11 @@ ENDOBJECT
 
 /*** Toolbar Description Flags ***/
 
-#define TDF_TOGGLE      0x01 /* Set this if it's a toggle-button */
-#define TDF_RADIO       0x02 /* AND this if it's also a radio-button */
-#define TDF_GHOSTED     0x04
-#define TDF_GONE        0x08 /* Make the button temporarily go away */
-#define TDF_SELECTED    0x10 /* State of a toggle-button */
+#define TDF_TOGGLE      $01 /* Set this if it's a toggle-button */
+#define TDF_RADIO       $02 /* AND this if it's also a radio-button */
+#define TDF_GHOSTED     $04
+#define TDF_GONE        $08 /* Make the button temporarily go away */
+#define TDF_SELECTED    $10 /* State of a toggle-button */
 
 #define TDF_RADIOTOGGLE TDF_TOGGLE+TDF_RADIO /* A practical definition */
 

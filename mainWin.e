@@ -16,9 +16,9 @@ MODULE 'muimaster','libraries/mui','amigalib/boopsi','utility/tagitem',
        'DelphE/mccBalance', 'DelphE/mccRectangle', 'DelphE/mccWindow',
        'DelphE/mccApplication', 'DelphE/mccBase', 'DelphE/mccListTree',
        'DelphE/fileUtils', 'DelphE/stringUtils', 'DelphE/Array',
-       'DelphE/mccCodeEditor'
+       'DelphE/mccCodeEditor', 'DelphE/mccCycle'
 
-ENUM BTN_OPEN, BTN_NEW, BTN_SAVE, BTN_SPC1, BTN_COMPILE, BTN_BUILD, BTN_RUN
+ENUM BTN_OPEN, BTN_NEW, BTN_SAVE, BTN_SPC1, BTN_COMPILE, BTN_BUILD, BTN_RUN, BTN_DEBUG
 ENUM NEW_CLICK=1, OPEN_CLICK, FILESELECT_CHANGE
 
 OBJECT tMainWindow OF mccWindow
@@ -29,8 +29,14 @@ OBJECT tMainWindow OF mccWindow
       spc:        PTR TO mccRectangle,
       con:        PTR TO mccTextEditor,
       treelist:   PTR TO mccListTree,
+      exes:       PTR TO mccCycle,
       fu:         PTR TO fileUtils
       drawer, file
+ENDOBJECT
+
+OBJECT nodeData
+  isFile,
+  isExecutable
 ENDOBJECT
 
 PROC create() OF tMainWindow
@@ -44,18 +50,18 @@ PROC create() OF tMainWindow
               MUIA_Toolbar_ImageSelect, 'PROGDIR:Images/ButtonBank1s.bsh',
               MUIA_Toolbar_ImageGhost, 'PROGDIR:Images/ButtonBank1g.bsh',
               MUIA_Toolbar_Description, buildBank([
-                Toolbar_TextButton(0, 'Open',  "o"),
-                Toolbar_TextButton(0, 'New',   "n"),
-                Toolbar_TextButton(0, 'Save',  "s"),
+                Toolbar_HintButton(0, 'Open',  "o"),
+                Toolbar_HintButton(0, 'New',   "n"),
+                Toolbar_HintButton(0, 'Save',  "s"),
                 Toolbar_Space,
-                Toolbar_TextButton(0, 'Compile',"c"),
-                Toolbar_TextButton(0, 'Build',  "b"),
-                Toolbar_TextButton(0, 'Run',    "r"),
-                Toolbar_TextButton(0, 'Debug',  "d"),
+                Toolbar_HintButton(0, 'Compile',"c"),
+                Toolbar_HintButton(0, 'Build',  "b"),
+                Toolbar_HintButton(TDF_GHOSTED, 'Run',    "r"),
+                Toolbar_HintButton(TDF_GHOSTED, 'Debug',  "d"),
                 Toolbar_End
               ]),
               -> MUIA_Font, MUIV_Font_Small,
-              MUIA_ShortHelp, FALSE,
+              MUIA_ShortHelp, TRUE,
               MUIA_Draggable, FALSE,
               TAG_END
             ])
@@ -65,12 +71,14 @@ PROC create() OF tMainWindow
   NEW self.spc.create()
   NEW self.con.create(20)
   NEW self.treelist.create(25)
+->  NEW self.exes.create()
 
   self.setContent(VGroup,
 
           Child, HGroup,
             Child, self.toolbar.handle,
             Child, self.spc.handle,
+->            Child, self.exes.handle,
           End,
 
           Child, HGroup,
@@ -93,6 +101,7 @@ PROC hookEvents(app: PTR TO mccApplication) OF tMainWindow
   self.hookEvent(app, self.toolbar.onClick(BTN_COMPILE), `self.compileClick())
   self.hookEvent(app, self.toolbar.onClick(BTN_BUILD), `self.buildClick())
   self.hookEvent(app, self.toolbar.onClick(BTN_RUN), `self.runClick())
+  self.hookEvent(app, self.toolbar.onClick(BTN_DEBUG), `self.debugClick())
   self.hookEvent(app, self.treelist.onDblClick(), `self.treeSelectChange())
 
 ENDPROC
@@ -125,7 +134,7 @@ PROC compileClick() OF tMainWindow
 
   cmd := strClone('cd ')
   cmd := strConcat(cmd, self.drawer)
-  cmd := strConcat(cmd, '\nec ')
+  cmd := strConcat(cmd, '\nec debug ')
   cmd := strConcat(cmd, self.file)
   cmd := strConcat(cmd, ' IGNORECACHE QUIET > T:delphe-compiler-out')
 
@@ -171,15 +180,59 @@ PROC checkForError(buffer) OF tMainWindow
 ENDPROC
 
 PROC runClick() OF tMainWindow
-    self.log(['Need to work out which is main!!!', NIL])
+DEF cmd, r, buffer, exe
+
+  exe := String(StrLen(self.file))
+  StrCopy(exe, self.file, StrLen(self.file)-2)
+
+  cmd := strClone('cd ')
+  cmd := strConcat(cmd, self.drawer)
+  cmd := strConcat(cmd, '\n')
+  cmd := strConcat(cmd, exe)
+  cmd := strConcat(cmd, ' > T:delphe-execute-out')
+  r:=Execute(cmd, 0, 0)
+
+  WriteF('Result \d\n', r)
+    
+  buffer:=self.fu.readFile('T:delphe-execute-out')
+  self.log([buffer, NIL])
+  self.checkForError(buffer)
+ENDPROC
+
+PROC debugClick() OF tMainWindow
+DEF cmd, r, buffer, exe
+
+  exe := String(StrLen(self.file))
+  StrCopy(exe, self.file, StrLen(self.file)-2)
+
+  cmd := strClone('cd ')
+  cmd := strConcat(cmd, self.drawer)
+  cmd := strConcat(cmd, '\nedbg ')
+  cmd := strConcat(cmd, exe)
+  cmd := strConcat(cmd, ' > T:delphe-execute-out')
+  r:=Execute(cmd, 0, 0)
+
+  WriteF('Result \d\n', r)
+    
+  buffer:=self.fu.readFile('T:delphe-execute-out')
+  self.log([buffer, NIL])
+  self.checkForError(buffer)
 ENDPROC
 
 PROC treeSelectChange() OF tMainWindow
-    DEF buf, node: muis_listtree_treenode, s
+    DEF node: muis_listtree_treenode, s, data: nodeData
 
     node:=self.treelist.getEntryActive()
 
     self.file:=node.tn_Name
+    data:=node.tn_User
+
+    IF data.isFile
+      WriteF('File!!')
+    ELSE
+      WriteF('Folder!!!')
+    ENDIF
+
     s := strClone('')
     node:=self.treelist.getParent(node)
     WHILE (node>0)
@@ -194,14 +247,28 @@ PROC treeSelectChange() OF tMainWindow
     IF (strEndsWith(s, '/'))
         self.log(['Cannot open a folder'])
     ELSE
-       self.log(['Opening [', s, ']'])
-
-       self.codeEditor.clearText()
-
-       IF (buf:=self.fu.readFile(s))
-         self.codeEditor.insertText(buf)
-       ENDIF
+        self.loadFile(s)
     ENDIF
+ENDPROC
+
+PROC loadFile(filename) OF tMainWindow
+  DEF buf, r
+
+   self.log(['Opening [', filename, ']'])
+
+   self.codeEditor.clearText()
+
+   IF (buf:=self.fu.readFile(filename))
+     self.codeEditor.insertText(buf)
+     self.codeEditor.gotoLine(0)
+     r := InStr(buf, '\nPROC main()')
+     self.setRunnable(r > -1)
+   ENDIF
+ENDPROC
+
+PROC setRunnable(runnable) OF tMainWindow
+  self.toolbar.enabled(BTN_RUN, runnable)
+  self.toolbar.enabled(BTN_DEBUG, runnable)
 ENDPROC
 
 PROC log(list:PTR TO LONG) OF tMainWindow
@@ -240,7 +307,7 @@ PROC loadDrawer() OF tMainWindow
 ENDPROC
 
 PROC loadDrawerContents(rootnode, drawer) OF tMainWindow
-    DEF names: arr, s, d, i, node
+    DEF names: arr, s, d, i, node, data: nodeData
 
     names:=self.fu.contents(drawer)
 
@@ -248,9 +315,13 @@ PROC loadDrawerContents(rootnode, drawer) OF tMainWindow
     FOR i:=0 TO names.length()-1
        s:=names.getItem(i)
        IF (strEndsWith(s, '.e'))
-         node:=self.treelist.addNode(s, rootnode, 1)
+         NEW data
+         data.isFile := TRUE
+         node:=self.treelist.addNode(s, rootnode, data)
        ELSEIF (strEndsWith(s, '/'))
-         node:=self.treelist.addNode(s, rootnode, 1)
+         NEW data
+         data.isFile := FALSE
+         node:=self.treelist.addNode(s, rootnode, data)
          
          d := strClone(self.drawer)
          d := strConcat(d, '/')

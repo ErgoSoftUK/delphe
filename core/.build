@@ -1,6 +1,6 @@
 compile=ec DEBUG SYM IGNORECACHE
 
-all: MCCBase.m MCCWindow.m MCCApplication.m MCCBalance.m MCCGroup.m MCCListtree.m MCCListview.m MCCRectangle.m MCCTexteditor.m MCCToolbar.m Logger.m FileUtils.m StringUtils.m Array.m MCCCodeEditor.m
+all: MCCBase.m MCCWindow.m MCCApplication.m MCCBalance.m MCCGroup.m MCCListtree.m MCCListview.m MCCRectangle.m MCCTexteditor.m MCCToolbar.m Logger.m FileUtils.m StringUtils.m Array.m MCCCodeEditor.m MCCCycle.m
 
 MCCBase.m: MCCBase.e
   $(compile) MCCBase.e
@@ -44,6 +44,10 @@ MCCCodeEditor.m: MCCCodeEditor.e MCCBase.m
 
 MCCToolbar.m: MCCToolbar.e MCCBase.m
   $(compile) MCCToolbar.e
+  COPY $(target) emodules:DelphE
+
+MCCCycle.m: MCCCycle.e MCCBase.m
+  $(compile) MCCCycle.e
   COPY $(target) emodules:DelphE
 
 Logger.m: Logger.e
