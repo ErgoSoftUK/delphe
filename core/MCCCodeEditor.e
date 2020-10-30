@@ -8,13 +8,14 @@ OPT PREPROCESS
 
 MODULE 'muimaster','amigalib/boopsi', 'libraries/mui', 'utility/tagitem',
        'DelphE/mccBase', 'mui/texteditor_mcc', 'DelphE/mccTextEditor', 'DelphE/array',
-       'DelphE/string'
+       'DelphE/stringUtils'
 
 OBJECT mccCodeEditor OF mccTextEditor
 ENDOBJECT
 
 PROC setContents(value) OF mccCodeEditor
-  set(self.editorHandle, MUIA_TextEditor_Contents, self.parse(value))
+  -> set(self.editorHandle, MUIA_TextEditor_Contents, self.parse(value))
+  set(self.editorHandle, MUIA_TextEditor_Contents, value)
 ENDPROC
 
 PROC insertText(text, position=MUIV_TextEditor_InsertText_Top) OF mccCodeEditor
@@ -22,6 +23,7 @@ PROC insertText(text, position=MUIV_TextEditor_InsertText_Top) OF mccCodeEditor
   doMethodA(self.editorHandle, [MUIM_TextEditor_InsertText, text, position])
 ENDPROC
 
+/*
 PROC parse(text) OF mccCodeEditor
   DEF keywords:arr, s:string, i, match, matchword:string, pos, t, txt: string, result:string, end
 
@@ -84,3 +86,4 @@ PROC parse(text) OF mccCodeEditor
 
   text:=result.value
 ENDPROC text
+*/

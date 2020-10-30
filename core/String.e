@@ -1,15 +1,7 @@
 OPT MODULE
 OPT EXPORT
 
-/*** GLOBAL STRING FUNCTIONS ***/
-PROC strClone(str)
-  DEF clone, l
-  l := StrLen(str)
-  clone := String(l)
-  StrCopy(clone, str, l)
-ENDPROC clone
-
-/*** STRING OBJECT FUNCTIONS ***/
+/*
 OBJECT string
   value
 ENDOBJECT
@@ -18,9 +10,6 @@ PROC create(v) OF string
   self.value:=String(StrLen(v))
   StrCopy(self.value, v)
 ENDPROC
-
-PROC len() OF string
-ENDPROC StrLen(self.value)
 
 PROC clone() OF string
     DEF s: PTR TO string
@@ -57,3 +46,4 @@ PROC endsWith(v) OF string
   s:=String(l)
   RightStr(s, self.value,l)
 ENDPROC StrCmp(s,v)
+*/

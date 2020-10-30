@@ -66,7 +66,14 @@ PROC insertText(text, position=MUIV_TextEditor_InsertText_Top) OF mccTextEditor
   doMethodA(self.editorHandle, [MUIM_TextEditor_InsertText, text, position])
 ENDPROC
 
+PROC appendText(text) OF mccTextEditor
+  doMethodA(self.editorHandle, [MUIM_TextEditor_InsertText, text, MUIV_TextEditor_InsertText_Bottom])
+ENDPROC
+
 PROC getText() OF mccTextEditor
   DEF buffer
   buffer:=doMethodA(self.editorHandle, [MUIM_TextEditor_ExportText])
 ENDPROC buffer
+
+PROC scrollBottom() OF mccTextEditor
+ENDPROC

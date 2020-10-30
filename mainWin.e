@@ -15,7 +15,7 @@ MODULE 'muimaster','libraries/mui','amigalib/boopsi','utility/tagitem',
        'DelphE/mccTextEditor', 'DelphE/mccToolbar', 'DelphE/mccListview',
        'DelphE/mccBalance', 'DelphE/mccRectangle', 'DelphE/mccWindow',
        'DelphE/mccApplication', 'DelphE/mccBase', 'DelphE/mccListTree',
-       'DelphE/fileUtils', 'DelphE/stringUtils', 'DelphE/Array', 'DelphE/String',
+       'DelphE/fileUtils', 'DelphE/stringUtils', 'DelphE/Array',
        'DelphE/mccCodeEditor'
 
 ENUM BTN_OPEN, BTN_NEW, BTN_SAVE, BTN_SPC1, BTN_COMPILE, BTN_BUILD, BTN_RUN
@@ -27,7 +27,7 @@ OBJECT tMainWindow OF mccWindow
       b1:         PTR TO mccBalance,
       b2:         PTR TO mccBalance,
       spc:        PTR TO mccRectangle,
-      con:        PTR TO mccListview,
+      con:        PTR TO mccTextEditor,
       treelist:   PTR TO mccListTree,
       fu:         PTR TO fileUtils
       drawer, file
@@ -107,29 +107,29 @@ PROC openClick() OF tMainWindow
 ENDPROC
 
 PROC saveClick() OF tMainWindow
-  DEF buffer, s:string
+  DEF buffer, s
 
   buffer:=self.codeEditor.getText()
 
-  NEW s.create(self.drawer)
-  s.concat(self.file)
+  s := strClone(self.drawer)
+  s := strConcat(s, self.file)
 
-  self.fu.writeFile(s.value, buffer)
+  self.fu.writeFile(s, buffer)
 
   FreeVec(buffer)
 ENDPROC
 
 PROC compileClick() OF tMainWindow
-  DEF cmd: string, r, buffer, node: muis_listtree_treenode
+  DEF cmd, r, buffer, node: muis_listtree_treenode
   self.log(['Compiling... ', self.file, NIL])
 
-  NEW cmd.create('cd ')
-  cmd.concat(self.drawer)
-  cmd.concat('\nec ')
-  cmd.concat(self.file)
-  cmd.concat(' IGNORECACHE QUIET > T:delphe-compiler-out')
+  cmd := strClone('cd ')
+  cmd := strConcat(cmd, self.drawer)
+  cmd := strConcat(cmd, '\nec ')
+  cmd := strConcat(cmd, self.file)
+  cmd := strConcat(cmd, ' IGNORECACHE QUIET > T:delphe-compiler-out')
 
-  r:=Execute(cmd.value, 0, 0)
+  r:=Execute(cmd, 0, 0)
 
   WriteF('Result \d\n', r)
     
@@ -138,14 +138,14 @@ PROC compileClick() OF tMainWindow
 ENDPROC
 
 PROC buildClick() OF tMainWindow
-  DEF cmd:string, r, buffer
+  DEF cmd, r, buffer
   self.log(['Building... ', self.file, NIL])
 
-  NEW cmd.create('cd ')
-  cmd.concat(self.drawer)
-  cmd.concat('\nbuild force > T:delphe-compiler-out\n')
+  cmd := strClone('cd ')
+  cmd := strConcat(cmd, self.drawer)
+  cmd := strConcat(cmd, '\nbuild force > T:delphe-compiler-out\n')
 
-  r:=Execute(cmd.value, 0, 0)
+  r:=Execute(cmd, 0, 0)
 
   WriteF('Result \d\n', r)
     
@@ -159,53 +159,52 @@ ENDPROC
 
 
 PROC treeSelectChange() OF tMainWindow
-    DEF buf, node: muis_listtree_treenode, s:string
+    DEF buf, node: muis_listtree_treenode, s
 
     node:=self.treelist.getEntryActive()
 
     self.file:=node.tn_Name
-    NEW s.create('')
+    s := strClone('')
     node:=self.treelist.getParent(node)
     WHILE (node>0)
-        s.prepend(node.tn_Name)
+        s := strPrepend(s, node.tn_Name)
         node:=self.treelist.getParent(node)
     ENDWHILE
-    self.drawer:=s.value
+    self.drawer:=s
 
-    NEW s.create(self.drawer)
-    s.concat(self.file)
+    s := strClone(self.drawer)
+    s := strConcat(s, self.file)
 
-    IF (s.endsWith('/'))
+    IF (strEndsWith(s, '/'))
         self.log(['Cannot open a folder'])
     ELSE
-       self.log(['Opening [', s.value, ']'])
+       self.log(['Opening [', s, ']'])
 
        self.codeEditor.clearText()
 
-       IF (buf:=self.fu.readFile(s.value))
+       IF (buf:=self.fu.readFile(s))
          self.codeEditor.insertText(buf)
        ENDIF
     ENDIF
 ENDPROC
 
 PROC log(list:PTR TO LONG) OF tMainWindow
-    DEF s:string, i, msg
+    DEF s, i
 
-    NEW s.create('')
+    s := strClone('')
 
     FOR i:=0 TO ListLen(list)
-      s.concat(list[i])
+      s := strConcat(s, list[i])
     ENDFOR
 
-    msg:=s.value
+    s := strConcat(s, '\n')
 
-    self.con.insertBottom(msg)
+    self.con.appendText(s)
     self.con.scrollBottom()
 ENDPROC
 
 PROC onOpen() OF tMainWindow
-    self.drawer := self.fu.currentDir()
-    
+    self.drawer := self.fu.currentDir()    
     self.loadDrawer()
 ENDPROC
 
@@ -215,32 +214,33 @@ PROC openProject() OF tMainWindow
 ENDPROC
 
 PROC loadDrawer() OF tMainWindow
-    DEF s: string, rootnode
+    DEF s, rootnode
 
-    NEW s.create(self.drawer)
-    s.concat('/')
-    rootnode:=self.treelist.addNode(s.value)
+    s := strClone(self.drawer)
+    s := strConcat(s, '/')
+    rootnode:=self.treelist.addNode(s)
 
     self.loadDrawerContents(rootnode, self.drawer)
 ENDPROC
 
 PROC loadDrawerContents(rootnode, drawer) OF tMainWindow
-    DEF names: arr, s: string, d: string, i, node
+    DEF names: arr, s, d, i, node
 
     names:=self.fu.contents(drawer)
 
     WriteF('Found \d entries for \s\n', names.length(), drawer)
     FOR i:=0 TO names.length()-1
        s:=names.getItem(i)
-       IF (s.endsWith('.e'))
-         node:=self.treelist.addNode(s.value, rootnode, 1)
-       ELSEIF (s.endsWith('/'))
-         node:=self.treelist.addNode(s.value, rootnode, 1)
-         NEW d.create(self.drawer)
-         d.concat('/')
-         d.concat(s.value)
-         WriteF('Loading child [\s]\n', d.value)
-         self.loadDrawerContents(node,d.value) 
+       IF (strEndsWith(s, '.e'))
+         node:=self.treelist.addNode(s, rootnode, 1)
+       ELSEIF (strEndsWith(s, '/'))
+         node:=self.treelist.addNode(s, rootnode, 1)
+         
+         d := strClone(self.drawer)
+         d := strConcat(d, '/')
+         d := strConcat(d, s)
+         WriteF('Loading child [\s]\n', d)
+         self.loadDrawerContents(node, d) 
        ENDIF
     ENDFOR
 ENDPROC

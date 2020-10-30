@@ -6,7 +6,7 @@ OPT MODULE
 OPT EXPORT
 
 MODULE 'Asl', 'libraries/Asl', 'dos/dos',
-       'DelphE/Array', 'DelphE/String'
+       'DelphE/Array', 'DelphE/stringUtils'
 
 
 OBJECT fileUtils
@@ -34,7 +34,7 @@ ENDPROC
 
 PROC contents(drawer) OF fileUtils
   DEF names, files, lock, fib: PTR TO fileinfoblock, name, ext, i, l, cnt, tmp,
-      al: arr, s: string
+      al: arr, s
 
     NEW al
 
@@ -45,10 +45,10 @@ PROC contents(drawer) OF fileUtils
             Examine(lock, fib)
             cnt:=0;
             WHILE ExNext(lock, fib)
-                NEW s.create(fib.filename)
+                s := strClone(fib.filename)
                 IF (fib.direntrytype > 0)
-                  s.concat('/')
-                  WriteF('Directory [\s]\n', s.value)
+                  s := strConcat(s, '/')
+                  WriteF('Directory [\s]\n', s)
                 ENDIF
                 al.add(s)
             ENDWHILE
@@ -60,13 +60,13 @@ PROC contents(drawer) OF fileUtils
 ENDPROC al
 
 PROC currentDir() OF fileUtils
-  DEF dir[200]	: ARRAY OF CHAR
+  DEF dir[200]    : ARRAY OF CHAR
   
   IF GetCurrentDirName(dir, 200)
-	dir := strClone(dir)
-	WriteF('Current dir [\s]\n', dir)
+    dir := strClone(dir)
+    WriteF('Current dir [\s]\n', dir)
   ELSE
-	WriteF('No current dir\n')
+    WriteF('No current dir\n')
   ENDIF
 ENDPROC dir
 
