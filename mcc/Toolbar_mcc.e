@@ -117,9 +117,6 @@ PROC buildBank(list:PTR TO LONG)
 
   l:=ListLen(list)
   s:=SIZEOF muip_toolbar_description
-  WriteF('List length is \d\n', l)
-  WriteF('Element size is \d\n', s)
-
 
   result:=New(l * s)
   FOR cc:=0 TO l-1 DO CopyMem(list[cc], result+(cc*s), s)

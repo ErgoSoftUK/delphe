@@ -48,7 +48,6 @@ PROC contents(drawer) OF fileUtils
                 s := strClone(fib.filename)
                 IF (fib.direntrytype > 0)
                   s := strConcat(s, '/')
-                  WriteF('Directory [\s]\n', s)
                 ENDIF
                 al.add(s)
             ENDWHILE
@@ -64,9 +63,8 @@ PROC currentDir() OF fileUtils
   
   IF GetCurrentDirName(dir, 200)
     dir := strClone(dir)
-    WriteF('Current dir [\s]\n', dir)
   ELSE
-    WriteF('No current dir\n')
+    dir := NIL
   ENDIF
 ENDPROC dir
 
@@ -98,4 +96,3 @@ PROC reqDrawer() OF fileUtils
     CloseLibrary(aslbase)
   ENDIF
 ENDPROC d
-

@@ -124,12 +124,13 @@ PROC saveClick() OF tMainWindow
   s := strConcat(s, self.file)
 
   self.fu.writeFile(s, buffer)
-
-  FreeVec(buffer)
 ENDPROC
 
 PROC compileClick() OF tMainWindow
   DEF cmd, r, buffer, node: muis_listtree_treenode
+
+  self.log(['Saving... ', self.file, NIL])
+  self.saveClick()
   self.log(['Compiling... ', self.file, NIL])
 
   cmd := strClone('cd ')
@@ -140,8 +141,6 @@ PROC compileClick() OF tMainWindow
 
   r:=Execute(cmd, 0, 0)
 
-  WriteF('Result \d\n', r)
-    
   buffer:=self.fu.readFile('T:delphe-compiler-out')
   self.log([buffer, NIL])
   self.checkForError(buffer)
@@ -157,8 +156,6 @@ PROC buildClick() OF tMainWindow
 
   r:=Execute(cmd, 0, 0)
 
-  WriteF('Result \d\n', r)
-    
   buffer:=self.fu.readFile('T:delphe-compiler-out')
   self.log([buffer, NIL])
   self.checkForError(buffer)
@@ -192,8 +189,6 @@ DEF cmd, r, buffer, exe
   cmd := strConcat(cmd, ' > T:delphe-execute-out')
   r:=Execute(cmd, 0, 0)
 
-  WriteF('Result \d\n', r)
-    
   buffer:=self.fu.readFile('T:delphe-execute-out')
   self.log([buffer, NIL])
   self.checkForError(buffer)
@@ -212,8 +207,6 @@ DEF cmd, r, buffer, exe
   cmd := strConcat(cmd, ' > T:delphe-execute-out')
   r:=Execute(cmd, 0, 0)
 
-  WriteF('Result \d\n', r)
-    
   buffer:=self.fu.readFile('T:delphe-execute-out')
   self.log([buffer, NIL])
   self.checkForError(buffer)
@@ -227,12 +220,13 @@ PROC treeSelectChange() OF tMainWindow
     self.file:=node.tn_Name
     data:=node.tn_User
 
+/*
     IF data.isFile
       WriteF('File!!')
     ELSE
       WriteF('Folder!!!')
     ENDIF
-
+*/
     s := strClone('')
     node:=self.treelist.getParent(node)
     WHILE (node>0)
@@ -311,7 +305,6 @@ PROC loadDrawerContents(rootnode, drawer) OF tMainWindow
 
     names:=self.fu.contents(drawer)
 
-    WriteF('Found \d entries for \s\n', names.length(), drawer)
     FOR i:=0 TO names.length()-1
        s:=names.getItem(i)
        IF (strEndsWith(s, '.e'))
@@ -326,7 +319,6 @@ PROC loadDrawerContents(rootnode, drawer) OF tMainWindow
          d := strClone(self.drawer)
          d := strConcat(d, '/')
          d := strConcat(d, s)
-         WriteF('Loading child [\s]\n', d)
          self.loadDrawerContents(node, d) 
        ENDIF
     ENDFOR

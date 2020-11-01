@@ -15,7 +15,6 @@ PRIVATE
 ENDOBJECT
 
 PROC create() OF mccApplication HANDLE
-  WriteF('Opening muimaster\n')
   IF (muimasterbase:= OpenLibrary(MUIMASTER_NAME, MUIMASTER_VMIN))=NIL THEN
     Raise('Failed to open muimaster.library')
 EXCEPT
@@ -23,7 +22,6 @@ EXCEPT
 ENDPROC
 
 PROC initialize() OF mccApplication HANDLE
- WriteF('Initializing\n')
   self.handle := ApplicationObject,
     MUIA_Application_Title      , 'DelphE',
     MUIA_Application_Version    , '$VER: DelphE 0.1 (22.06.2018)',
@@ -38,7 +36,6 @@ PROC initialize() OF mccApplication HANDLE
 
   self.window.hookEvents(self)
 
-  WriteF('Open window\n')
   set(self.window.handle,MUIA_Window_Open,MUI_TRUE)
   self.window.onOpen()
 EXCEPT
@@ -54,7 +51,6 @@ PROC run(mainWin:PTR TO mccWindow) OF mccApplication
   -> Add application quit handler to window
   doMethodA(self.window.handle, [MUIM_Notify, MUIA_Window_CloseRequest,MUI_TRUE, self.handle,2,MUIM_Application_ReturnID,MUIV_Application_ReturnID_Quit])
 
-  WriteF('Run!!!\n')
   running:=TRUE
 
   WHILE running
@@ -65,7 +61,6 @@ PROC run(mainWin:PTR TO mccWindow) OF mccApplication
         running := FALSE
       DEFAULT
         IF (result > 0)
-          WriteF('Notified!\n')
           evt:=result
           evt.handler.handleEvent(evt)
         ENDIF
@@ -79,7 +74,6 @@ PROC run(mainWin:PTR TO mccWindow) OF mccApplication
 ENDPROC
 
 PROC cleanup() OF mccApplication
-  WriteF('Cleaning up\n')
   IF self.handle THEN Mui_DisposeObject(self.handle)
   IF muimasterbase THEN CloseLibrary(muimasterbase)
   IF exception THEN WriteF('\s\n', exception)
