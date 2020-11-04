@@ -12,22 +12,24 @@ PROC main()
   testData := String(100)
   StrCopy(testData, 'Hello world')
 
+  -> Write once so doesnt show in mem use
+  fu.writeFile('T:test', testData)
   TEST('writeFile memory')
     fu.writeFile('T:test', testData)
-  CHECKS
+  CHECKMEM
   ENDTEST
 
   TEST('readFile memory')
     actual := fu.readFile('T:test')
     Dispose(actual)
-  CHECKS
+  CHECKMEM
   ENDTEST
 
   TEST('contents memory')
     contents := fu.contents('T:test')
     contents.clear(TRUE)
     contents.end()
-  CHECKS
+  CHECKMEM
   ENDTEST
 
 ENDPROC

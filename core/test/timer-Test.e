@@ -13,7 +13,7 @@ PROC main()
   TEST('GetTime memory')
     actual := t.getTime()
     Dispose(actual)
-  CHECKS
+  CHECKMEM
   ENDTEST
 
   TEST('Difference memory')
@@ -25,6 +25,6 @@ PROC main()
 
     Dispose(t1)
     Dispose(actual)
-  CHECKS
+  CHECKMEM
   ENDTEST
 ENDPROC

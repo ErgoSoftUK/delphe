@@ -16,7 +16,7 @@ PROC main()
 
     actual.clear(TRUE)
     actual.end()
-  CHECKS
+  CHECKMEM
   ENDTEST
 
   TEST('add expand -  memory')
@@ -27,7 +27,21 @@ PROC main()
 
     actual.clear(TRUE)
     actual.end()
-  CHECKS
+  CHECKMEM
   ENDTEST
+
+  TEST('Sort')
+    NEW actual.create(5)
+    actual.add('Hello')
+    actual.add('To')
+    actual.add('The')
+    actual.add('Entire')
+    actual.add('Planet')
+    actual.sortStr()
+    FOR i:=0 TO 4
+      WriteF('\d: [\s]\n', i, actual.getItem(i))
+    ENDFOR
+  ENDTEST
+
 
 ENDPROC

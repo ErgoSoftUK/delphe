@@ -304,6 +304,7 @@ PROC loadDrawerContents(rootnode, drawer) OF tMainWindow
     DEF names: arr, s, d, i, node, data: nodeData
 
     names:=self.fu.contents(drawer)
+    names.sortStr()
 
     FOR i:=0 TO names.length()-1
        s:=names.getItem(i)

@@ -50,6 +50,21 @@ PROC clear(freeContent=FALSE) OF arr
   self.items:=List(self.max)
 ENDPROC
 
+PROC sortStr() OF arr
+  -> Just do a bubble sort
+  DEF i, j, t
+  
+  FOR i:= 0 TO ListLen(self.items) -1
+    FOR j:=0 TO ListLen(self.items) - (i+2)
+      IF OstrCmp(self.items[j], self.items[j+1]) = -1
+        t := self.items[j]
+        self.items[j] := self.items[j+1]
+        self.items[j+1] := t
+      ENDIF
+    ENDFOR
+  ENDFOR 
+ENDPROC
+
 PROC end() OF arr
   DisposeLink(self.items)
 ENDPROC
