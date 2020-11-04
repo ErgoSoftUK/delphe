@@ -1,0 +1,5 @@
+list #?.e QUICK NOHEAD LFORMAT="ec IGNORECACHE %n" TO PIPE:compile
+Execute PIPE:compile
+
+list #?.e QUICK NOHEAD LFORMAT="%m" TO PIPE:run
+Execute PIPE:run

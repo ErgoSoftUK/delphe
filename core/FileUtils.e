@@ -29,6 +29,7 @@ PROC writeFile(filename, buffer) OF fileUtils
   IF (fh:=Open(filename, NEWFILE))
     Write(fh, buffer, StrLen(buffer))
     Close(fh)
+    Dispose(fh)
   ENDIF
 ENDPROC
 

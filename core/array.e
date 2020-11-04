@@ -37,6 +37,19 @@ PROC expand() OF arr
   DisposeLink(tmp)
 ENDPROC
 
+PROC clear(freeContent=FALSE) OF arr
+  DEF i
+
+  IF freeContent
+    FOR i:=0 TO ListLen(self.items)
+      DisposeLink(self.items[i])
+    ENDFOR
+  ENDIF
+
+  DisposeLink(self.items)
+  self.items:=List(self.max)
+ENDPROC
+
 PROC end() OF arr
   DisposeLink(self.items)
 ENDPROC

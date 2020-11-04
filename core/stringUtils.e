@@ -4,6 +4,9 @@
 
 OPT MODULE
 OPT EXPORT
+OPT PREPROCESS
+
+#define StrConcat(s1, s2) s1:=strConcat(s1, s2)
 
 PROC strClone(str)
   DEF clone, l
@@ -13,27 +16,41 @@ PROC strClone(str)
 ENDPROC clone
 
 PROC strConcat(s, v)
-    DEF t
-    t:=String(StrLen(s) + StrLen(v))
+  DEF t, len
+
+  len := StrLen(s) + StrLen(v)
+
+  IF StrMax(s) >= len
+    StrAdd(s, v)
+  ELSE
+    t:=String(len)
     StrCopy(t, s)
     StrAdd(t, v)
-    Dispose(s)
-ENDPROC t
+    DisposeLink(s)
+    s:=t
+  ENDIF
+ENDPROC s
 
 PROC strPrepend(s, v)
-    DEF t
-    t:=String(StrLen(v) + StrLen(s))
-    StrCopy(t, v)
-    StrAdd(t, s)
-    Dispose(s)
-ENDPROC t
+  DEF t
+
+  t:=String(StrLen(v) + StrLen(s))
+  StrCopy(t, v)
+  StrAdd(t, s)
+  DisposeLink(s)
+  s:=t
+ENDPROC s
 
 PROC strEndsWith(s, v)
-  DEF t, l
-  l:=StrLen(v)
+  DEF t, l, r
+  l:=StrLen(s) - StrLen(v)
+
   t:=String(l)
-  RightStr(t, s,l)
-ENDPROC StrCmp(t,v)
+  MidStr(t, s, l)
+  r:=StrCmp(t, v)
+
+  DisposeLink(t)
+ENDPROC r
 
 PROC strReplace(str, from, to)
   DEF i, l, buf, pos, chunk
@@ -50,7 +67,7 @@ PROC strReplace(str, from, to)
       chunk := String(l)
       MidStr(chunk, str, i, l)
       StrAdd(buf, chunk)
-      Dispose(chunk)
+      DisposeLink(chunk)
     ENDIF
     StrAdd(buf, to)
     i := pos + StrLen(from)
@@ -62,8 +79,10 @@ PROC strReplace(str, from, to)
     chunk := String(l)
     MidStr(chunk, str, i, l)
     StrAdd(buf, chunk)
-    Dispose(chunk)   
+    DisposeLink(chunk)
   ENDIF
+
+  DisposeLink(str)
 ENDPROC buf
 
 PROC strCount(str, text)
