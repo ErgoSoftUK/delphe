@@ -7,21 +7,26 @@ OPT EXPORT
 OPT PREPROCESS
 
 MODULE 'muimaster', 'libraries/mui', 'amigalib/boopsi', 'utility/tagitem',
-       'DelphE/mccBase', 'DelphE/mccWindow'
+       'DelphE/mccBase', 'DelphE/mccWindow', 'DelphE/Logger'
 
 OBJECT mccApplication OF mccBase
-  window: PTR TO mccWindow
-PRIVATE
 ENDOBJECT
 
+DEF delpheApplication: PTR TO mccApplication
+
 PROC create() OF mccApplication HANDLE
+  DEBUG('Opening MUI\n')
   IF (muimasterbase:= OpenLibrary(MUIMASTER_NAME, MUIMASTER_VMIN))=NIL THEN
     Raise('Failed to open muimaster.library')
+
+  delpheApplication := self
 EXCEPT
   self.cleanup()
 ENDPROC
 
-PROC initialize() OF mccApplication HANDLE
+PROC run(win: PTR TO mccWindow) OF mccApplication
+
+  DEBUG('Create app object\n')
   self.handle := ApplicationObject,
     MUIA_Application_Title      , 'DelphE',
     MUIA_Application_Version    , '$VER: DelphE 0.1 (22.06.2018)',
@@ -29,27 +34,34 @@ PROC initialize() OF mccApplication HANDLE
     MUIA_Application_Author     , 'Richard Collier',
     MUIA_Application_Description, 'Borland Delphi inspired development enviroment for Amiga ',
     MUIA_Application_Base       , 'DELPHE',
-    SubWindow, self.window.handle,
+    SubWindow, win.handle,
   End
 
   IF self.handle = NIL THEN Raise('Failed to create application')
 
-  self.window.hookEvents(self)
+  DEBUG('Run window\n')
+  self.openWindow(win)
 
-  set(self.window.handle,MUIA_Window_Open,MUI_TRUE)
-  self.window.onOpen()
-EXCEPT
+  DEBUG('Quit application\n')
   self.cleanup()
 ENDPROC
 
-PROC run(mainWin:PTR TO mccWindow) OF mccApplication
+PROC openWindow(win:PTR TO mccWindow) OF mccApplication
   DEF sigs, running, result, evt: PTR TO mccEvent
 
-  self.window := mainWin
-  self.initialize()
-
   -> Add application quit handler to window
-  doMethodA(self.window.handle, [MUIM_Notify, MUIA_Window_CloseRequest,MUI_TRUE, self.handle,2,MUIM_Application_ReturnID,MUIV_Application_ReturnID_Quit])
+  DEBUG('Hook close event\n')
+
+  DEBUG('Hook windows own events\n')
+  win.hookEvents(self)
+
+  DEBUG('Open window\n')
+  set(win.handle, MUIA_Window_Open, MUI_TRUE)
+
+  DEBUG('Call windows onOpen()\n')
+  win.onOpen()
+
+  doMethodA(win.handle, [MUIM_Notify, MUIA_Window_CloseRequest,MUI_TRUE, self.handle, 2, MUIM_Application_ReturnID, MUIV_Application_ReturnID_Quit])
 
   running:=TRUE
 
@@ -58,6 +70,7 @@ PROC run(mainWin:PTR TO mccWindow) OF mccApplication
 
     SELECT result
       CASE MUIV_Application_ReturnID_Quit
+        DEBUG('App quit\n')
         running := FALSE
       DEFAULT
         IF (result > 0)
@@ -69,11 +82,12 @@ PROC run(mainWin:PTR TO mccWindow) OF mccApplication
     IF sigs THEN sigs:=Wait(sigs)
   ENDWHILE
 
-  set(self.window.handle,MUIA_Window_Open,FALSE)
-  self.cleanup()
+  DEBUG('Close window\n')
+  set(win.handle, MUIA_Window_Open, FALSE)
 ENDPROC
 
 PROC cleanup() OF mccApplication
+  DEBUG('Cleanup\n')
   IF self.handle THEN Mui_DisposeObject(self.handle)
   IF muimasterbase THEN CloseLibrary(muimasterbase)
   IF exception THEN WriteF('\s\n', exception)

@@ -58,8 +58,13 @@ PROC strReplace(str, from, to)
 
   l := StrLen(str) + ((StrLen(to)-StrLen(from))*i)
   buf := String(l)
-  
+
+  IF (buf = NIL)
+    WriteF('FAILED TO ALLOCATE MEMORY!!\n')
+  ENDIF
+
   i := 0
+
   pos := InStr(str, from)
   WHILE pos > -1
     IF (pos > 0)

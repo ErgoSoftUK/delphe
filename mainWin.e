@@ -8,7 +8,7 @@ OPT PREPROCESS
 
 MODULE 'muimaster','libraries/mui','amigalib/boopsi','utility/tagitem',
 
-       'Asl', 'libraries/Asl', 'dos/dos',
+       'Asl', 'libraries/Asl', 'dos/dos', 'tools/file',
 
        'mui/infotext_mcc','mui/toolbar_mcc', 'mui/listtree_mcc',
 
@@ -16,7 +16,7 @@ MODULE 'muimaster','libraries/mui','amigalib/boopsi','utility/tagitem',
        'DelphE/mccBalance', 'DelphE/mccRectangle', 'DelphE/mccWindow',
        'DelphE/mccApplication', 'DelphE/mccBase', 'DelphE/mccListTree',
        'DelphE/fileUtils', 'DelphE/stringUtils', 'DelphE/Array',
-       'DelphE/mccCodeEditor', 'DelphE/mccCycle'
+       'DelphE/mccCodeEditor', 'DelphE/Logger'
 
 ENUM BTN_OPEN, BTN_NEW, BTN_SAVE, BTN_SPC1, BTN_COMPILE, BTN_BUILD, BTN_RUN, BTN_DEBUG
 ENUM NEW_CLICK=1, OPEN_CLICK, FILESELECT_CHANGE
@@ -29,7 +29,6 @@ OBJECT tMainWindow OF mccWindow
       spc:        PTR TO mccRectangle,
       con:        PTR TO mccTextEditor,
       treelist:   PTR TO mccListTree,
-      exes:       PTR TO mccCycle,
       fu:         PTR TO fileUtils
       drawer, file
 ENDOBJECT
@@ -40,6 +39,8 @@ OBJECT nodeData
 ENDOBJECT
 
 PROC create() OF tMainWindow
+  DEBUG('Instanciate components\n')
+
   NEW self.fu
   NEW self.codeEditor.create()
   self.codeEditor.setFixedFont(MUI_TRUE)
@@ -71,14 +72,13 @@ PROC create() OF tMainWindow
   NEW self.spc.create()
   NEW self.con.create(20)
   NEW self.treelist.create(25)
-->  NEW self.exes.create()
 
+  DEBUG('Set content\n')
   self.setContent(VGroup,
 
           Child, HGroup,
             Child, self.toolbar.handle,
             Child, self.spc.handle,
-->            Child, self.exes.handle,
           End,
 
           Child, HGroup,
@@ -90,6 +90,7 @@ PROC create() OF tMainWindow
           Child, self.con.handle,
         End)
 
+  DEBUG('Super create\n')
   SUPER self.create()
 
 ENDPROC
@@ -116,14 +117,7 @@ PROC openClick() OF tMainWindow
 ENDPROC
 
 PROC saveClick() OF tMainWindow
-  DEF buffer, s
-
-  buffer:=self.codeEditor.getText()
-
-  s := strClone(self.drawer)
-  s := strConcat(s, self.file)
-
-  self.fu.writeFile(s, buffer)
+  self.codeEditor.saveFile(self.file)
 ENDPROC
 
 PROC compileClick() OF tMainWindow
@@ -177,7 +171,7 @@ PROC checkForError(buffer) OF tMainWindow
 ENDPROC
 
 PROC runClick() OF tMainWindow
-DEF cmd, r, buffer, exe
+DEF cmd, r, buffer, exe, l, lines: PTR TO LONG, c, i
 
   exe := String(StrLen(self.file))
   StrCopy(exe, self.file, StrLen(self.file)-2)
@@ -189,8 +183,16 @@ DEF cmd, r, buffer, exe
   cmd := strConcat(cmd, ' > T:delphe-execute-out')
   r:=Execute(cmd, 0, 0)
 
-  buffer:=self.fu.readFile('T:delphe-execute-out')
-  self.log([buffer, NIL])
+  buffer, l:=readfile('T:delphe-execute-out')
+
+  -> Log lines individually, just in case!
+  c:=countstrings(buffer, l)
+  lines:=stringsinfile(buffer, l, c)
+
+  FOR i:=0 TO c-1
+    self.log([lines[i], NIL])
+  ENDFOR
+
   self.checkForError(buffer)
 ENDPROC
 
@@ -220,13 +222,6 @@ PROC treeSelectChange() OF tMainWindow
     self.file:=node.tn_Name
     data:=node.tn_User
 
-/*
-    IF data.isFile
-      WriteF('File!!')
-    ELSE
-      WriteF('Folder!!!')
-    ENDIF
-*/
     s := strClone('')
     node:=self.treelist.getParent(node)
     WHILE (node>0)
@@ -246,18 +241,7 @@ PROC treeSelectChange() OF tMainWindow
 ENDPROC
 
 PROC loadFile(filename) OF tMainWindow
-  DEF buf, r
-
-   self.log(['Opening [', filename, ']'])
-
-   self.codeEditor.clearText()
-
-   IF (buf:=self.fu.readFile(filename))
-     self.codeEditor.insertText(buf)
-     self.codeEditor.gotoLine(0)
-     r := InStr(buf, '\nPROC main()')
-     self.setRunnable(r > -1)
-   ENDIF
+  self.codeEditor.loadFile(filename)
 ENDPROC
 
 PROC setRunnable(runnable) OF tMainWindow
