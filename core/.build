@@ -38,7 +38,7 @@ MCCTexteditor.m: MCCTexteditor.e MCCBase.m
   $(compile) MCCTexteditor.e
   COPY $(target) emodules:DelphE
 
-MCCCodeEditor.m: MCCCodeEditor.e MCCBase.m
+MCCCodeEditor.m: MCCCodeEditor.e MCCBase.m MCCTexteditor.m Array.m
   $(compile) MCCCodeEditor.e
   COPY $(target) emodules:DelphE
 
@@ -70,11 +70,11 @@ Timer.m: Timer.e
   $(compile) Timer.e
   COPY $(target) emodules:DelphE
 
-SyntaxHighlighter.m: SyntaxHighlighter.e stringutils.m
+SyntaxHighlighter.m: SyntaxHighlighter.e StringUtils.m
   $(compile) SyntaxHighlighter.e
   COPY $(target) emodules:DelphE
 
-UnitTest.m: UnitTest.e
+UnitTest.m: UnitTest.e Timer.m
   $(compile) UnitTest.e
   COPY $(target) emodules:DelphE
 

@@ -12,14 +12,11 @@ MODULE 'muimaster', 'libraries/mui', 'amigalib/boopsi', 'utility/tagitem',
 OBJECT mccApplication OF mccBase
 ENDOBJECT
 
-DEF delpheApplication: PTR TO mccApplication
-
 PROC create() OF mccApplication HANDLE
   DEBUG('Opening MUI\n')
   IF (muimasterbase:= OpenLibrary(MUIMASTER_NAME, MUIMASTER_VMIN))=NIL THEN
     Raise('Failed to open muimaster.library')
 
-  delpheApplication := self
 EXCEPT
   self.cleanup()
 ENDPROC
