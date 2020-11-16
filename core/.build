@@ -4,81 +4,83 @@ all: MCCBase.m MCCWindow.m MCCApplication.m MCCBalance.m MCCGroup.m MCCListtree.
 
 MCCBase.m: MCCBase.e
   $(compile) MCCBase.e
-  COPY $(target) emodules:DelphE
+  COPY $(target) emodules:DelphE/
 
 MCCWindow.m: MCCWindow.e MCCBase.m
   $(compile) MCCWindow.e
-  COPY $(target) emodules:DelphE
+  COPY $(target) emodules:DelphE/
 
 MCCApplication.m: MCCApplication.e MCCBase.m MCCWindow.m
   $(compile) MCCApplication.e
-  COPY $(target) emodules:DelphE
+  COPY $(target) emodules:DelphE/
 
 MCCBalance.m: MCCBalance.e MCCBase.m
   $(compile) MCCBalance.e
-  COPY $(target) emodules:DelphE
+  COPY $(target) emodules:DelphE/
 
 MCCGroup.m: MCCGroup.e MCCBase.m
   $(compile) MCCGroup.e
-  COPY $(target) emodules:DelphE
+  COPY $(target) emodules:DelphE/
 
 MCCListtree.m: MCCListtree.e MCCBase.m
   $(compile) MCCListtree.e
-  COPY $(target) emodules:DelphE
+  COPY $(target) emodules:DelphE/
 
 MCCListview.m: MCCListview.e MCCBase.m
   $(compile) MCCListview.e
-  COPY $(target) emodules:DelphE
+  COPY $(target) emodules:DelphE/
 
 MCCRectangle.m: MCCRectangle.e MCCBase.m
   $(compile) MCCRectangle.e
-  COPY $(target) emodules:DelphE
+  COPY $(target) emodules:DelphE/
 
 MCCTexteditor.m: MCCTexteditor.e MCCBase.m
   $(compile) MCCTexteditor.e
-  COPY $(target) emodules:DelphE
+  COPY $(target) emodules:DelphE/
 
 MCCCodeEditor.m: MCCCodeEditor.e MCCBase.m MCCTexteditor.m Array.m
   $(compile) MCCCodeEditor.e
-  COPY $(target) emodules:DelphE
+  COPY $(target) emodules:DelphE/
 
 MCCToolbar.m: MCCToolbar.e MCCBase.m
   $(compile) MCCToolbar.e
-  COPY $(target) emodules:DelphE
+  COPY $(target) emodules:DelphE/
 
 MCCCycle.m: MCCCycle.e MCCBase.m
   $(compile) MCCCycle.e
-  COPY $(target) emodules:DelphE
+  COPY $(target) emodules:DelphE/
 
 Logger.m: Logger.e
   $(compile) Logger.e
-  COPY $(target) emodules:DelphE
+  COPY $(target) emodules:DelphE/
 
 FileUtils.m: FileUtils.e
   $(compile) FileUtils.e
-  COPY $(target) emodules:DelphE
+  COPY $(target) emodules:DelphE/
 
 StringUtils.m: StringUtils.e
   $(compile) StringUtils.e
-  COPY $(target) emodules:DelphE
+  COPY $(target) emodules:DelphE/
 
 Array.m: Array.e
   $(compile) Array.e
-  COPY $(target) emodules:DelphE
+  COPY $(target) emodules:DelphE/
 
 Timer.m: Timer.e
   $(compile) Timer.e
-  COPY $(target) emodules:DelphE
+  COPY $(target) emodules:DelphE/
 
 SyntaxHighlighter.m: SyntaxHighlighter.e StringUtils.m
   $(compile) SyntaxHighlighter.e
-  COPY $(target) emodules:DelphE
+  COPY $(target) emodules:DelphE/
 
 UnitTest.m: UnitTest.e Timer.m
   $(compile) UnitTest.e
-  COPY $(target) emodules:DelphE
+  COPY $(target) emodules:DelphE/
+
+setup:
+  MAKEDIR emodules:DelphE
 
 clean:
   DELETE emodules:DelphE/#?.m
   DELETE #?.m
-
