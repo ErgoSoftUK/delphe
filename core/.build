@@ -70,7 +70,7 @@ Timer.m: Timer.e
   $(compile) Timer.e
   COPY $(target) emodules:DelphE
 
-SyntaxHighlighter.m: SyntaxHighlighter.e
+SyntaxHighlighter.m: SyntaxHighlighter.e stringutils.m
   $(compile) SyntaxHighlighter.e
   COPY $(target) emodules:DelphE
 
