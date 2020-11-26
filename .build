@@ -11,4 +11,19 @@ mainWin.m: mainWin.e
 clean:
   DELETE delphe
   DELETE #?.m
+  
+config:
+  echo **** CLEANUP DelphE ****
+  delete emodules:delphe all
+  makedir emodules:delphe
+  echo **** BUILD MCC's ****
+  cd mcc
+  build force
+  echo **** BUILD CORE ****
+  cd /core
+  build force
+  echo **** BUILD App ****
+  cd /
+  build force
+  
 

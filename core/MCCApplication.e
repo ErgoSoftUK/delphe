@@ -10,37 +10,49 @@ MODULE 'muimaster', 'libraries/mui', 'amigalib/boopsi', 'utility/tagitem',
        'DelphE/mccBase', 'DelphE/mccWindow', 'DelphE/Logger'
 
 OBJECT mccApplication OF mccBase
+  title,
+  version,
+  copyright,
+  author,
+  description,
+  base
 ENDOBJECT
 
-PROC create() OF mccApplication HANDLE
-  DEBUG('Opening MUI\n')
-  IF (muimasterbase:= OpenLibrary(MUIMASTER_NAME, MUIMASTER_VMIN))=NIL THEN
-    Raise('Failed to open muimaster.library')
+DEF application: PTR TO mccApplication
 
-EXCEPT
-  self.cleanup()
-ENDPROC
+PROC create(winList: PTR TO LONG) OF mccApplication
+    DEF win: PTR TO mccWindow
+    DEF app, i, l
 
-PROC run(win: PTR TO mccWindow) OF mccApplication
+    l := ListLen(winList)
+    WriteF('Window count \d\n', l)
 
-  DEBUG('Create app object\n')
-  self.handle := ApplicationObject,
-    MUIA_Application_Title      , 'DelphE',
-    MUIA_Application_Version    , '$VER: DelphE 0.1 (22.06.2018)',
-    MUIA_Application_Copyright  , 'c2018 Ergonomic Software Solutions Ltd',
-    MUIA_Application_Author     , 'Richard Collier',
-    MUIA_Application_Description, 'Borland Delphi inspired development enviroment for Amiga ',
-    MUIA_Application_Base       , 'DELPHE',
-    SubWindow, win.handle,
-  End
+    IF l = 0 THEN Raise('Application has no windows')
 
-  IF self.handle = NIL THEN Raise('Failed to create application')
+   app := List((ListLen(winList) * 2) + 15)
 
-  DEBUG('Run window\n')
-  self.openWindow(win)
+   app := ListCopy(app, [TAG_IGNORE, 0,
+        MUIA_Application_Title      , self.title,
+        MUIA_Application_Version    , self.version,
+        MUIA_Application_Copyright  , self.copyright,
+        MUIA_Application_Author     , self.author,
+        MUIA_Application_Description, self.description,
+        MUIA_Application_Base       , self.base])
 
-  DEBUG('Quit application\n')
-  self.cleanup()
+   FOR i:=0 TO ListLen(winList) - 1
+      win := winList[i]
+        app := ListAdd(app, [SubWindow, win.handle])
+   ENDFOR
+
+   app := ListAdd(app, [TAG_DONE])
+
+   l := ListLen(app)
+    WriteF('App count \d\n', l)
+
+   DEBUG('Create app object\n')
+   self.handle := Mui_NewObjectA(MUIC_Application, app)
+
+    IF self.handle = NIL THEN Raise('Failed to create application')
 ENDPROC
 
 PROC openWindow(win:PTR TO mccWindow) OF mccApplication
@@ -48,9 +60,6 @@ PROC openWindow(win:PTR TO mccWindow) OF mccApplication
 
   -> Add application quit handler to window
   DEBUG('Hook close event\n')
-
-  DEBUG('Hook windows own events\n')
-  win.hookEvents(self)
 
   DEBUG('Open window\n')
   set(win.handle, MUIA_Window_Open, MUI_TRUE)
@@ -83,10 +92,4 @@ PROC openWindow(win:PTR TO mccWindow) OF mccApplication
   set(win.handle, MUIA_Window_Open, FALSE)
 ENDPROC
 
-PROC cleanup() OF mccApplication
-  DEBUG('Cleanup\n')
-  IF self.handle THEN Mui_DisposeObject(self.handle)
-  IF muimasterbase THEN CloseLibrary(muimasterbase)
-  IF exception THEN WriteF('\s\n', exception)
-ENDPROC
 

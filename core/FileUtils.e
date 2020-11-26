@@ -97,3 +97,21 @@ PROC reqDrawer() OF fileUtils
     CloseLibrary(aslbase)
   ENDIF
 ENDPROC d
+
+PROC reqFile() OF fileUtils
+  DEF req:PTR TO filerequester, d, f
+
+  d:=NIL
+  f:=NIL
+
+  IF (aslbase:=OpenLibrary('asl.library',37))
+    IF (req:=AllocFileRequest())
+      IF (RequestFile(req))
+        d:=strClone(req.drawer)
+        f:=strClone(req.file)
+      ENDIF
+      FreeAslRequest(req)
+    ENDIF
+    CloseLibrary(aslbase)
+  ENDIF
+ENDPROC d,f

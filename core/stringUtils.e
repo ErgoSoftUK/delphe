@@ -7,6 +7,7 @@ OPT EXPORT
 OPT PREPROCESS
 
 #define StrConcat(s1, s2) s1:=strConcat(s1, s2)
+#define StrAlloc(s1) strClone(s1)
 
 PROC strClone(str)
   DEF clone, l

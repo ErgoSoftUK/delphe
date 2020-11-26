@@ -14,7 +14,7 @@ OBJECT mccTextEditor OF mccBase
     sliderHandle
 ENDOBJECT
 
-PROC create(weight=100) OF mccTextEditor
+PROC create() OF mccTextEditor
 
   self.sliderHandle :=
     ScrollbarObject,
@@ -31,7 +31,6 @@ PROC create(weight=100) OF mccTextEditor
      MUIA_Group_Spacing, 0,
      Child, self.editorHandle,
      Child, self.sliderHandle,
-     MUIA_Weight, weight,
   End
 
 ENDPROC

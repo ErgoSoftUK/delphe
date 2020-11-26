@@ -4,7 +4,7 @@
 
 OPT MODULE
 
-MODULE 'DelphE/stringutils', 'Tools/file'
+MODULE 'DelphE/StringUtils', 'Tools/file'
 
 EXPORT PROC loadAndHighlight(filename)
   DEF buf, t, l, c, lines: PTR TO LONG, i

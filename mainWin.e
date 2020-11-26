@@ -33,79 +33,12 @@ OBJECT tMainWindow OF mccWindow
       drawer, file
 ENDOBJECT
 
+DEF mainWin : PTR TO tMainWindow
+
 OBJECT nodeData
   isFile,
   isExecutable
 ENDOBJECT
-
-PROC create() OF tMainWindow
-  DEBUG('Instanciate components\n')
-
-  NEW self.fu
-  NEW self.codeEditor.create()
-  self.codeEditor.setFixedFont(MUI_TRUE)
-
-
-  NEW self.toolbar.create([MUIA_Toolbar_ImageType, MUIV_Toolbar_ImageType_File,
-              MUIA_Toolbar_ImageNormal, 'PROGDIR:Images/ButtonBank1.iff',
-              MUIA_Toolbar_ImageSelect, 'PROGDIR:Images/ButtonBank1s.bsh',
-              MUIA_Toolbar_ImageGhost, 'PROGDIR:Images/ButtonBank1g.bsh',
-              MUIA_Toolbar_Description, buildBank([
-                Toolbar_HintButton(0, 'Open',  "o"),
-                Toolbar_HintButton(0, 'New',   "n"),
-                Toolbar_HintButton(0, 'Save',  "s"),
-                Toolbar_Space,
-                Toolbar_HintButton(0, 'Compile',"c"),
-                Toolbar_HintButton(0, 'Build',  "b"),
-                Toolbar_HintButton(TDF_GHOSTED, 'Run',    "r"),
-                Toolbar_HintButton(TDF_GHOSTED, 'Debug',  "d"),
-                Toolbar_End
-              ]),
-              -> MUIA_Font, MUIV_Font_Small,
-              MUIA_ShortHelp, TRUE,
-              MUIA_Draggable, FALSE,
-              TAG_END
-            ])
-
-  NEW self.b1.create()
-  NEW self.b2.create()
-  NEW self.spc.create()
-  NEW self.con.create(20)
-  NEW self.treelist.create(25)
-
-  DEBUG('Set content\n')
-  self.setContent(VGroup,
-
-          Child, HGroup,
-            Child, self.toolbar.handle,
-            Child, self.spc.handle,
-          End,
-
-          Child, HGroup,
-            Child, self.treelist.handle,
-            Child, self.b1.handle,
-            Child, self.codeEditor.handle,
-          End,
-          Child, self.b2.handle,
-          Child, self.con.handle,
-        End)
-
-  DEBUG('Super create\n')
-  SUPER self.create()
-
-ENDPROC
-
-PROC hookEvents(app: PTR TO mccApplication) OF tMainWindow
-  self.hookEvent(app, self.toolbar.onClick(BTN_NEW), `self.newClick())
-  self.hookEvent(app, self.toolbar.onClick(BTN_OPEN), `self.openClick())
-  self.hookEvent(app, self.toolbar.onClick(BTN_SAVE), `self.saveClick())
-  self.hookEvent(app, self.toolbar.onClick(BTN_COMPILE), `self.compileClick())
-  self.hookEvent(app, self.toolbar.onClick(BTN_BUILD), `self.buildClick())
-  self.hookEvent(app, self.toolbar.onClick(BTN_RUN), `self.runClick())
-  self.hookEvent(app, self.toolbar.onClick(BTN_DEBUG), `self.debugClick())
-  self.hookEvent(app, self.treelist.onDblClick(), `self.treeSelectChange())
-
-ENDPROC
 
 PROC newClick() OF tMainWindow
   self.log(['New!',NIL])
@@ -117,7 +50,25 @@ PROC openClick() OF tMainWindow
 ENDPROC
 
 PROC saveClick() OF tMainWindow
-  self.codeEditor.saveFile(self.file)
+  DEF f, d, filename, new
+  new := FALSE
+  IF self.file = NIL
+    d,f := self.fu.reqFile()
+    self.drawer := d
+    self.file := f
+    new := TRUE
+  ENDIF
+
+  IF self.file <> NIL
+    filename := strClone(self.drawer)
+    filename := strConcat(filename, self.file)
+    self.log(['Saving ', filename, NIL])
+    self.codeEditor.saveFile(filename)
+
+    IF new
+      self.loadDrawer()
+    ENDIF
+  ENDIF
 ENDPROC
 
 PROC compileClick() OF tMainWindow
@@ -265,22 +216,35 @@ PROC log(list:PTR TO LONG) OF tMainWindow
 ENDPROC
 
 PROC onOpen() OF tMainWindow
+  DEBUG('Get current DIR\n')
     self.drawer := self.fu.currentDir()    
+  DEBUG('load drawer contents\n')
     self.loadDrawer()
 ENDPROC
 
 PROC openProject() OF tMainWindow
-    self.drawer:=self.fu.reqDrawer()
+  DEF drawer
+  drawer := self.fu.reqDrawer()
+  IF drawer <> NIL
+    self.drawer:=drawer
     self.loadDrawer()
+  ENDIF
 ENDPROC
 
 PROC loadDrawer() OF tMainWindow
     DEF s, rootnode
 
+    DEBUG('Clearing tree list\n')
+    self.treelist.clear()
+
+    DEBUG('Building path\n')
     s := strClone(self.drawer)
     s := strConcat(s, '/')
+
+    DEBUG('Adding root node\n')
     rootnode:=self.treelist.addNode(s)
 
+    DEBUG('Loading contents\n')
     self.loadDrawerContents(rootnode, self.drawer)
 ENDPROC
 

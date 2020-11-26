@@ -13,7 +13,7 @@ OBJECT mccListTree OF mccBase
   nodes
 ENDOBJECT
 
-PROC create(weight=100) OF mccListTree
+PROC create() OF mccListTree
   self.nodes := ListtreeObject,
                     InputListFrame,
                     MUIA_Listtree_SortHook, MUIV_Listtree_SortHook_LeavesBottom,
@@ -29,7 +29,6 @@ PROC create(weight=100) OF mccListTree
                 MUIA_Listview_Input, TRUE,
                 MUIA_Listview_DragType, 1,
                 MUIA_Listview_List, self.nodes,
-                MUIA_Weight, weight,
             End
 ENDPROC
 
@@ -51,6 +50,10 @@ PROC getParent(node=NIL) OF mccListTree
 ENDPROC parent
 
 /** Methods **/
+
+PROC clear() OF mccListTree
+  doMethodA(self.nodes, [MUIM_Listtree_Remove, MUIV_Listtree_Remove_ListNode_Root, MUIV_Listtree_Remove_TreeNode_All, 0])
+ENDPROC
 
 PROC addNode(value, parent=NIL, data=NIL) OF mccListTree
   DEF node

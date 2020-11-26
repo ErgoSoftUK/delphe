@@ -10,10 +10,11 @@ MODULE 'muimaster','amigalib/boopsi', 'libraries/mui', 'utility/tagitem',
        'DelphE/mccBase', 'mui/toolbar_mcc'
 
 OBJECT mccToolbar OF mccBase
+  definition
 ENDOBJECT
 
-PROC create(attributes) OF mccToolbar
-  self.handle := Mui_NewObjectA(MUIC_Toolbar, attributes)
+PROC create() OF mccToolbar
+  self.handle := Mui_NewObjectA(MUIC_Toolbar, self.definition)
 ENDPROC
 
 /** METHODS **/

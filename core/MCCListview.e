@@ -13,7 +13,7 @@ OBJECT mccListview OF mccBase
   PRIVATE lines
 ENDOBJECT
 
-PROC create(weight=100) OF mccListview
+PROC create() OF mccListview
   self.lines:=0
   self.handle := ListviewObject,
     MUIA_Listview_Input, MUI_TRUE,
@@ -23,7 +23,6 @@ PROC create(weight=100) OF mccListview
       MUIA_List_ConstructHook, MUIV_List_ConstructHook_String,
       MUIA_List_DestructHook , MUIV_List_DestructHook_String,
     End,
-    MUIA_Weight, weight,
   End
 ENDPROC
 
